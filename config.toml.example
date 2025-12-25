@@ -1,0 +1,21 @@
+
+target_net_card = "wlp2s0"
+
+
+# Zone ID 配置（可选）
+# 如果留空，程序会自动根据域名查找对应的 Zone ID
+# 如果手动配置，则直接使用该 Zone ID
+# 可通过以下接口获取 zone_id:
+# curl https://api.cloudflare.com/client/v4/zones \
+#     -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+zone_id = ""
+api_token = ""
+base_url = "https://api.cloudflare.com/client/v4"
+
+[[domains]]
+domain = "a.example.me"
+proxied = false
+
+[[domains]]
+domain = "b.example.me"
+proxied = true

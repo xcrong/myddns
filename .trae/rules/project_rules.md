@@ -1,0 +1,2 @@
+- 更改代码后请执行 `cargo check` 检查代码
+- 使用 `cargo add` 添加依赖
