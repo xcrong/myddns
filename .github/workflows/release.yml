@@ -78,7 +78,12 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build release
-        run: cargo zigbuild --release --target ${{ matrix.target }}
+        run: |
+          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+            RUSTFLAGS="-C target-feature=+crt-static" cargo zigbuild --release --target ${{ matrix.target }}
+          else
+            cargo zigbuild --release --target ${{ matrix.target }}
+          fi
 
       - name: Prepare artifact
         run: |
