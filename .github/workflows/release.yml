@@ -17,22 +17,14 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             artifact_name: myddns-linux-x86_64
-            archive_format: tar.gz
           - target: aarch64-unknown-linux-gnu
             artifact_name: myddns-linux-aarch64
-            archive_format: tar.gz
           - target: armv7-unknown-linux-gnueabihf
             artifact_name: myddns-linux-armv7
-            archive_format: tar.gz
           - target: x86_64-apple-darwin
             artifact_name: myddns-macos-x86_64
-            archive_format: tar.gz
           - target: aarch64-apple-darwin
             artifact_name: myddns-macos-aarch64
-            archive_format: tar.gz
-          - target: x86_64-pc-windows-gnu
-            artifact_name: myddns-windows-x86_64
-            archive_format: zip
 
     steps:
       - name: Checkout code
@@ -41,7 +33,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu armv7-unknown-linux-gnueabihf x86_64-apple-darwin aarch64-apple-darwin x86_64-pc-windows-gnu
+          targets: x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu armv7-unknown-linux-gnueabihf x86_64-apple-darwin aarch64-apple-darwin
 
       - name: Install Zig
         run: |
@@ -50,11 +42,6 @@ jobs:
           sudo mv zig-x86_64-linux-0.15.2 /opt/zig
           echo "/opt/zig" >> $GITHUB_PATH
           echo "ZIGPATH=/opt/zig" >> $GITHUB_ENV
-
-      - name: Install MinGW toolchain for Windows
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mingw-w64
 
       - name: Install cargo-zigbuild
         run: cargo install cargo-zigbuild
@@ -78,30 +65,20 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build release
-        run: |
-          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
-            RUSTFLAGS="-C target-feature=+crt-static" cargo zigbuild --release --target ${{ matrix.target }}
-          else
-            cargo zigbuild --release --target ${{ matrix.target }}
-          fi
+        run: cargo zigbuild --release --target ${{ matrix.target }}
 
       - name: Prepare artifact
         run: |
           cd target/${{ matrix.target }}/release
-          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
-            strip myddns.exe || true
-            7z a ../../../${{ matrix.artifact_name }}.zip myddns.exe
-          else
-            strip myddns || true
-            chmod +x myddns
-            tar czf ../../../${{ matrix.artifact_name }}.tar.gz myddns
-          fi
+          strip myddns || true
+          chmod +x myddns
+          tar czf ../../../${{ matrix.artifact_name }}.tar.gz myddns
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact_name }}.${{ matrix.archive_format }}
-          path: ${{ matrix.artifact_name }}.${{ matrix.archive_format }}
+          name: ${{ matrix.artifact_name }}.tar.gz
+          path: ${{ matrix.artifact_name }}.tar.gz
 
   release:
     name: Create GitHub Release
